@@ -80,27 +80,7 @@ public class ScriptBindings implements Bindings {
     public static final String SERVER_PORT = "serverPort";
 
     // all threads will share this ! thread isolation is via Bindings (this class)
-    private static final Object NASHORN_LOCK = new Object();
-    private static ScriptEngine NASHORN;
-
-    private static ScriptEngine getNashorn() {
-        if(NASHORN == null) {
-            synchronized (NASHORN_LOCK) {
-                // ensure if there are parallel threads that only the first one creates the instance of Nashorn
-                if(NASHORN == null) {
-                    NASHORN = new ScriptEngineManager().getEngineByName("nashorn");
-                }
-            }
-        }
-
-        return NASHORN;
-    }
-
-    public static ScriptEngine initNashorn(ClassLoader classLoader) {
-        NASHORN = new ScriptEngineManager(classLoader).getEngineByName("nashorn");
-        return NASHORN;
-    }
-
+    private static final ScriptEngine NASHORN = new ScriptEngineManager(null).getEngineByName("nashorn");
 
     public final ScriptBridge bridge;
     private final ScriptValueMap vars;
@@ -165,7 +145,7 @@ public class ScriptBindings implements Bindings {
 
     public static ScriptValue eval(String exp, Bindings bindings) {
         try {
-            Object o = bindings == null ? ScriptBindings.getNashorn().eval(exp) : ScriptBindings.getNashorn().eval(exp, bindings);
+            Object o = bindings == null ? NASHORN.eval(exp) : NASHORN.eval(exp, bindings);
             return new ScriptValue(o);
         } catch (KarateFailException | KarateAbortException | KarateFileNotFoundException ke) {
             throw ke; // reduce log bloat for common file-not-found situation / handle karate.abort() / karate.fail()
@@ -177,7 +157,7 @@ public class ScriptBindings implements Bindings {
     }
 
     public static Bindings createBindings() {
-        return ScriptBindings.getNashorn().createBindings();
+        return NASHORN.createBindings();
     }
 
     public void putAdditionalVariable(String name, Object value) {

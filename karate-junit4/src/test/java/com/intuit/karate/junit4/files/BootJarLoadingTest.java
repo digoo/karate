@@ -105,7 +105,7 @@ public class BootJarLoadingTest {
         private static final String BOOT_INF_CLASS_DIRECTORY = "BOOT-INF/classes!/";
 
         SpringBootResource(org.springframework.core.io.Resource resource) throws IOException {
-            super(resource.getURL(), Thread.currentThread().getContextClassLoader());
+            super(resource.getURL());
         }
 
         private static String getBootClassSubstring(String path) {

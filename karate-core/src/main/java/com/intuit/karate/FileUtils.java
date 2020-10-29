@@ -50,13 +50,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.slf4j.LoggerFactory;
 
@@ -167,7 +164,7 @@ public class FileUtils {
         return pos == -1 ? text : text.substring(pos + 1);
     }
 
-    public static StringUtils.Pair parsePathAndTags(String text) {
+    private static StringUtils.Pair parsePathAndTags(String text) {
         int pos = text.indexOf('@');
         if (pos == -1) {
             text = StringUtils.trimToEmpty(text);
@@ -191,17 +188,17 @@ public class FileUtils {
             return new Resource(path, context.classLoader);
         } else if (isFilePath(path)) {
             String temp = removePrefix(path);
-            return new Resource(new File(temp), path, context.classLoader);
+            return new Resource(new File(temp), path);
         } else if (isThisPath(path)) {
             String temp = removePrefix(path);
             Path parentPath = context.featureContext.parentPath;
             Path childPath = parentPath.resolve(temp);
-            return new Resource(childPath, context.classLoader);
+            return new Resource(childPath);
         } else {
             try {
                 Path parentPath = context.rootFeatureContext.parentPath;
                 Path childPath = parentPath.resolve(path);
-                return new Resource(childPath, context.classLoader);
+                return new Resource(childPath);
             } catch (Exception e) {
                 LOGGER.error("feature relative path resolution failed: {}", e.getMessage());
                 throw e;
@@ -601,16 +598,16 @@ public class FileUtils {
         if (classpath) {
             searchPath = removePrefix(searchPath);
             for (URL url : getAllClassPathUrls(cl)) {
-                collectFeatureFiles(url, searchPath, files, cl);
+                collectFeatureFiles(url, searchPath, files);
             }
             return files;
         } else {
-            collectFeatureFiles(null, searchPath, files, cl);
+            collectFeatureFiles(null, searchPath, files);
             return files;
         }
     }
 
-    private static void collectFeatureFiles(URL url, String searchPath, List<Resource> files, ClassLoader cl) {
+    private static void collectFeatureFiles(URL url, String searchPath, List<Resource> files) {
         boolean classpath = url != null;
         int colonPos = searchPath.lastIndexOf(':');
         int line = -1;
@@ -663,7 +660,7 @@ public class FileUtils {
                 String relativePath = rootPath.relativize(path.toAbsolutePath()).toString();
                 relativePath = toStandardPath(relativePath).replaceAll("[.]+/", "");
                 String prefix = classpath ? CLASSPATH_COLON : "";
-                files.add(new Resource(path, prefix + relativePath, line, cl));
+                files.add(new Resource(path, prefix + relativePath, line));
             }
         }
     }

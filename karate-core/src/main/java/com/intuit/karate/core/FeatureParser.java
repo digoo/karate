@@ -27,13 +27,9 @@ import com.intuit.karate.FileUtils;
 import com.intuit.karate.Resource;
 import com.intuit.karate.StringUtils;
 import com.intuit.karate.exception.KarateException;
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.antlr.v4.runtime.tree.TerminalNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -42,6 +38,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.antlr.v4.runtime.tree.TerminalNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -58,15 +64,13 @@ public class FeatureParser extends KarateParserBaseListener {
     private static final List<String> PREFIXES = Arrays.asList("*", "Given", "When", "Then", "And", "But");
 
     public static Feature parse(String relativePath) {
-        return parse(new Resource(relativePath));
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Path path = FileUtils.fromRelativeClassPath(relativePath, cl);
+        return parse(new Resource(path, relativePath, -1));
     }
 
     public static Feature parse(File file) {
-        return parse(file, Thread.currentThread().getContextClassLoader());
-    }
-
-    public static Feature parse(File file, ClassLoader cl) {
-        return parse(new Resource(file.toPath(), cl));
+        return parse(new Resource(file.toPath()));
     }
 
     public static Feature parse(Resource resource) {

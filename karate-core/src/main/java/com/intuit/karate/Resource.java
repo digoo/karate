@@ -60,9 +60,7 @@ public class Resource {
         };
     }
 
-    public Resource(File file, String relativePath, ClassLoader cl) {
-        this(file.toPath(), relativePath, -1, cl);
-    }
+    public static final Resource EMPTY = new Resource(Paths.get(""), "", -1);
 
     public Resource(String relativePath) {
         this(relativePath, Thread.currentThread().getContextClassLoader());
@@ -72,21 +70,20 @@ public class Resource {
         this(FileUtils.fromRelativeClassPath(relativePath, cl), relativePath, -1, cl);
     }    
 
-    public Resource(Path path, String relativePath, int line, ClassLoader cl) {
+    public Resource(Path path, String relativePath, int line) {
         this.path = path;
         this.line = line;
-        this.classLoader = cl;
         file = !path.toUri().getScheme().equals("jar");
         if (relativePath == null) {
-            this.relativePath = FileUtils.toRelativeClassPath(path, cl);
+            this.relativePath = FileUtils.toRelativeClassPath(path, Thread.currentThread().getContextClassLoader());
         } else {
             this.relativePath = relativePath;
         }
         packageQualifiedName = FileUtils.toPackageQualifiedName(this.relativePath);
     }
 
-    public Resource(URL url, ClassLoader cl) {
-        this(FileUtils.urlToPath(url, null), cl);
+    public Resource(URL url) {
+        this(FileUtils.urlToPath(url, null));
     }
 
     public Resource(Path path, ClassLoader cl) {
